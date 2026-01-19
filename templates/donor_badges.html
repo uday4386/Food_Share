@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Donor Badges - FoodShare{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Donor Badges: {{ user.username }}</h1>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline">← Back to Dashboard</a>
+</div>
+
+<!-- Donor Statistics -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-content">
+            <h3>{{ total_donations }}</h3>
+            <p>Total Donations</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">⚖️</div>
+        <div class="stat-content">
+            <h3>{{ total_quantity }} kg</h3>
+            <p>Total Quantity</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+            <h3>{{ completed_donations }}</h3>
+            <p>Completed Donations</p>
+        </div>
+    </div>
+</div>
+
+<!-- Badges -->
+<div class="dashboard-section">
+    <h2>Achievement Badges</h2>
+    {% if badges %}
+    <div class="badges-grid">
+        {% for badge in badges %}
+        <div class="badge-card {% if badge.unlocked %}badge-unlocked{% else %}badge-locked{% endif %}">
+            <div class="badge-icon">{{ badge.icon }}</div>
+            <div class="badge-name">{{ badge.name }}</div>
+            {% if badge.unlocked %}
+            <div class="badge-status unlocked">✓ Unlocked</div>
+            {% else %}
+            <div class="badge-status locked">🔒 Locked</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">No badges earned yet. Keep donating to unlock badges!</p>
+    {% endif %}
+</div>
+{% endblock %}
+

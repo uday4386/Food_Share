@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - FoodShare{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Admin/NGO Dashboard</h1>
+    <p>Overall System Analytics & Daily Food Data Analysis</p>
+    <p class="user-uid"
+        style="background: #333; display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.9rem; color: #fff;">
+        <strong>UID:</strong> {{ current_user.unique_id if current_user else 'ADMIN-MASTER' }}
+    </p>
+    <!-- Note: admin_dashboard route doesn't pass 'user', but we can access it if we passed it or use a global current_user context processor. 
+         Checking app.py: admin_dashboard passes many vars but NOT 'user'. 
+         Let's check if 'user' is available. `app.py` line 341 does not query 'user'.
+         I need to update app.py to pass 'user' to admin_dashboard too. -->
+</div>
+
+<!-- Overall Statistics -->
+<div class="stats-grid">
+    <div class="stat-card stat-card-large">
+        <div class="stat-icon">📦</div>
+        <div class="stat-content">
+            <h3>{{ total_donations }}</h3>
+            <p>Total Donations</p>
+        </div>
+    </div>
+    <div class="stat-card stat-card-large">
+        <div class="stat-icon">⚖️</div>
+        <div class="stat-content">
+            <h3>{{ "%.1f"|format(total_quantity) }} kg</h3>
+            <p>Total Quantity</p>
+        </div>
+    </div>
+    <div class="stat-card stat-card-large">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+            <h3>{{ total_receivers }}</h3>
+            <p>Total Receivers</p>
+        </div>
+    </div>
+    <div class="stat-card stat-card-large">
+        <div class="stat-icon">🎁</div>
+        <div class="stat-content">
+            <h3>{{ total_donors }}</h3>
+            <p>Total Donors</p>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Statistics -->
+<div class="dashboard-section" id="today-stats-section">
+    <h2>📅 Today's Food Data Analysis</h2>
+    <div class="stats-grid stats-grid-small stats-five-col">
+        <div class="stat-card stat-today">
+            <div class="stat-icon">📥</div>
+            <div class="stat-content">
+                <h3>{{ today_donations }}</h3>
+                <p>Donations Today</p>
+            </div>
+        </div>
+        <div class="stat-card stat-today">
+            <div class="stat-icon">⚖️</div>
+            <div class="stat-content">
+                <h3>{{ "%.1f"|format(today_quantity) }} kg</h3>
+                <p>Quantity Today</p>
+            </div>
+        </div>
+        <div class="stat-card stat-today">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <h3>{{ today_claims }}</h3>
+                <p>Claims Today</p>
+            </div>
+        </div>
+        <div class="stat-card stat-today">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+                <h3>{{ today_requests }}</h3>
+                <p>Requests Today</p>
+            </div>
+        </div>
+        <div class="stat-card stat-today">
+            <div class="stat-icon">🎉</div>
+            <div class="stat-content">
+                <h3>{{ today_completed }}</h3>
+                <p>Completed Today</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Weekly Statistics -->
+<div class="dashboard-section">
+    <h2>📊 Weekly Statistics (Last 7 Days)</h2>
+    <div class="stats-grid stats-grid-small">
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-content">
+                <h3>{{ week_donations }}</h3>
+                <p>Donations This Week</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⚖️</div>
+            <div class="stat-content">
+                <h3>{{ "%.1f"|format(week_quantity) }} kg</h3>
+                <p>Quantity This Week</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏠</div>
+            <div class="stat-content">
+                <h3>{{ week_receivers }}</h3>
+                <p>Active Receivers</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Data Chart (Last 7 Days) -->
+<div class="dashboard-section">
+    <h2>📈 Daily Food Data Trend (Last 7 Days)</h2>
+    {% if daily_stats %}
+    <div class="chart-container">
+        <div class="daily-chart">
+            {% for day in daily_stats %}
+            <div class="chart-day">
+                <div class="chart-bars">
+                    <div class="chart-bar-group">
+                        <div class="chart-bar chart-bar-donations" style="height: {{ day.donations_percent|round }}%">
+                            <span class="chart-value">{{ day.donations }}</span>
+                        </div>
+                        <div class="chart-bar chart-bar-quantity" style="height: {{ day.quantity_percent|round }}%">
+                            <span class="chart-value">{{ day.quantity|int }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-label">{{ day.day_name }}</div>
+                <div class="chart-date">{{ day.date }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="chart-legend">
+            <span class="legend-item"><span class="legend-color chart-bar-donations"></span> Donations</span>
+            <span class="legend-item"><span class="legend-color chart-bar-quantity"></span> Quantity (kg)</span>
+        </div>
+    </div>
+    {% else %}
+    <p class="empty-state">No daily data available yet.</p>
+    {% endif %}
+</div>
+
+<!-- Status Breakdown -->
+<div class="dashboard-section">
+    <h2>📊 Donation Status Breakdown</h2>
+    <div class="stats-grid stats-grid-small">
+        <div class="stat-card">
+            <div class="stat-icon">🟢</div>
+            <div class="stat-content">
+                <h3>{{ available_donations }}</h3>
+                <p>Available</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🟡</div>
+            <div class="stat-content">
+                <h3>{{ claimed_donations }}</h3>
+                <p>Claimed</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔵</div>
+            <div class="stat-content">
+                <h3>{{ completed_donations }}</h3>
+                <p>Completed</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Status Breakdown -->
+<div class="dashboard-section">
+    <h2>📋 Request Status Breakdown</h2>
+    <div class="stats-grid stats-grid-small">
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-content">
+                <h3>{{ pending_requests }}</h3>
+                <p>Pending Requests</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <h3>{{ fulfilled_requests }}</h3>
+                <p>Fulfilled Requests</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">❌</div>
+            <div class="stat-content">
+                <h3>{{ cancelled_requests }}</h3>
+                <p>Cancelled Requests</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Food Type Breakdown -->
+<div class="dashboard-section">
+    <h2>🍲 Food Type Analysis</h2>
+    {% if food_type_stats %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Food Type</th>
+                    <th>Number of Donations</th>
+                    <th>Total Quantity (kg)</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for food in food_type_stats %}
+                <tr>
+                    <td><strong>{{ food.food_type }}</strong></td>
+                    <td>{{ food.count }}</td>
+                    <td>{{ "%.1f"|format(food.total_quantity or 0) }}</td>
+                    <td>
+                        <div class="progress-bar-container">
+                            {% set percentage = (food.count / total_donations * 100)|round if total_donations > 0 else 0
+                            %}
+                            <div class="progress-bar" style="width: {{ percentage }}%"></div>
+                            <span>{{ percentage }}%</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No food type data available.</p>
+    {% endif %}
+</div>
+
+<!-- Top Donors with Badges -->
+<div class="dashboard-section">
+    <h2>🏆 Top Donors Leaderboard & Badges</h2>
+    {% if top_donors %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Donor Name</th>
+                    <th>Email</th>
+                    <th>Total Donations</th>
+                    <th>Total Quantity (kg)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donor in top_donors %}
+                <tr>
+                    <td>
+                        {% if loop.index == 1 %}🥇
+                        {% elif loop.index == 2 %}🥈
+                        {% elif loop.index == 3 %}🥉
+                        {% else %}{{ loop.index }}{% endif %}
+                    </td>
+                    <td><strong>{{ donor.username }}</strong></td>
+                    <td>{{ donor.email }}</td>
+                    <td>{{ donor.donation_count }}</td>
+                    <td>{{ "%.1f"|format(donor.total_quantity or 0) }}</td>
+                    <td>
+                        <a href="{{ url_for('view_donor_badges', user_id=donor.id) }}"
+                            class="btn btn-sm btn-primary">View Badges</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No donors yet.</p>
+    {% endif %}
+</div>
+
+<!-- Active Receivers -->
+<div class="dashboard-section">
+    <h2>🏠 Active Receivers</h2>
+    {% if active_receivers %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Receiver Name</th>
+                    <th>Organization</th>
+                    <th>Total Requests</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for receiver in active_receivers %}
+                <tr>
+                    <td><strong>{{ receiver.username }}</strong></td>
+                    <td>{{ receiver.organization_name or 'N/A' }}</td>
+                    <td>{{ receiver.request_count }}</td>
+                    <td><span class="status-badge status-available">Active</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No active receivers yet.</p>
+    {% endif %}
+</div>
+
+<!-- Recent Donations -->
+<div class="dashboard-section">
+    <h2>📦 Recent Donations</h2>
+    {% if recent_donations %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Donor</th>
+                    <th>Food Type</th>
+                    <th>Quantity</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donation in recent_donations %}
+                <tr>
+                    <td>{{ donation.donor.username }}</td>
+                    <td>{{ donation.food_type }}</td>
+                    <td>{{ donation.quantity }} {{ donation.quantity_unit }}</td>
+                    <td>{{ donation.location }}</td>
+                    <td><span class="status-badge status-{{ donation.status }}">{{ donation.status|title }}</span></td>
+                    <td>{{ donation.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No donations yet.</p>
+    {% endif %}
+</div>
+
+<!-- Recent Requests -->
+<div class="dashboard-section">
+    <h2>📋 Recent Food Requests</h2>
+    {% if recent_requests %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Receiver</th>
+                    <th>Food Type Needed</th>
+                    <th>Quantity</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in recent_requests %}
+                <tr>
+                    <td>{{ req.receiver.username }}</td>
+                    <td>{{ req.food_type_needed }}</td>
+                    <td>{{ req.quantity_needed }} {{ req.quantity_unit }}</td>
+                    <td>{{ req.location }}</td>
+                    <td><span class="status-badge status-{{ req.status }}">{{ req.status|title }}</span></td>
+                    <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No requests yet.</p>
+    {% endif %}
+</div>
+
+<!-- Monthly Statistics -->
+<div class="dashboard-section">
+    <h2>📅 Monthly Statistics (Last 6 Months)</h2>
+    {% if monthly_stats %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Total Donations</th>
+                    <th>Total Quantity (kg)</th>
+                    <th>Average per Day</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in monthly_stats %}
+                <tr>
+                    <td><strong>{{ stat.month }}</strong></td>
+                    <td>{{ stat.donations }}</td>
+                    <td>{{ "%.1f"|format(stat.quantity or 0) }}</td>
+                    {% set avg_per_day = (stat.donations / 30)|round(1) if stat.donations > 0 else 0 %}
+                    <td>{{ "%.1f"|format(avg_per_day) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No monthly statistics available.</p>
+    {% endif %}
+</div>
+{% endblock %}

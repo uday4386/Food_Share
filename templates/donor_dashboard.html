@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Donor Dashboard - FoodShare{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Donor Dashboard</h1>
+    <p>Welcome, {{ user.username }}!</p>
+    <p class="user-uid"
+        style="background: #e8f5e9; display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.9rem; color: #1b5e20;">
+        <strong>UID:</strong> {{ user.unique_id }}
+    </p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-content">
+            <h3>{{ total_donations }}</h3>
+            <p>Total Donations</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">⚖️</div>
+        <div class="stat-content">
+            <h3>{{ total_quantity }} kg</h3>
+            <p>Total Quantity Donated</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+            <h3>{{ claimed_donations }}</h3>
+            <p>Claimed Donations</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🎉</div>
+        <div class="stat-content">
+            <h3>{{ completed_donations }}</h3>
+            <p>Completed Donations</p>
+        </div>
+    </div>
+</div>
+
+<!-- Donate Form -->
+<div class="dashboard-section">
+    <h2>Donate Food</h2>
+    <form action="{{ url_for('donate_food') }}" method="POST" class="donate-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Food Type</label>
+                <input type="text" name="food_type" placeholder="e.g., Rice, Vegetables, Fruits" required>
+            </div>
+            <div class="form-group">
+                <label>Quantity</label>
+                <div class="quantity-input">
+                    <input type="number" name="quantity" placeholder="Amount" required>
+                    <select name="quantity_unit">
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="liters">liters</option>
+                        <option value="pieces">pieces</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input type="text" name="location" placeholder="Address or location" required>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Expiry Date (Optional)</label>
+                <input type="date" name="expiry_date">
+            </div>
+            <div class="form-group">
+                <label>Description (Optional)</label>
+                <textarea name="description" rows="2" placeholder="Additional details about the food"></textarea>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Donation</button>
+    </form>
+</div>
+
+<!-- Recent Donations -->
+<div class="dashboard-section">
+    <h2>Recent Donations</h2>
+    {% if recent_donations %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Food Type</th>
+                    <th>Quantity</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donation in recent_donations %}
+                <tr>
+                    <td>{{ donation.food_type }}</td>
+                    <td>{{ donation.quantity }} {{ donation.quantity_unit }}</td>
+                    <td>{{ donation.location }}</td>
+                    <td><span class="status-badge status-{{ donation.status }}">{{ donation.status|title }}</span></td>
+                    <td>{{ donation.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No donations yet. Start by donating food above!</p>
+    {% endif %}
+</div>
+{% endblock %}

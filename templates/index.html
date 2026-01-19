@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+
+{% block head %}
+<style>
+    body {
+        background-image: url("{{ url_for('static', filename='Untitled_design.gif') }}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position: center;
+    }
+
+    /* Ensure the body expands to fill screen if content is short */
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+    }
+
+    /* Login Card Styling */
+    .login-card-content {
+        border: 2px solid black !important;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .login-card-content:hover {
+        transform: scale(1.02);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        /* Slightly more opaque on hover */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-header">
+        <h1 style="color: #FF9800 !important;">🍲 FoodShare</h1>
+        <p style="color: black !important; font-weight: bold;">Smart Food Redistribution System</p>
+    </div>
+
+    <!-- Tabbed Login Container -->
+    <div class="login-wrapper" style="max-width: 600px; margin: 0 auto; position: relative;">
+        <!-- Tabs -->
+        <div class="login-tabs" style="display: flex; gap: 5px; padding-left: 20px;">
+            <div class="login-tab" data-type="admin" onclick="switchTab('admin')"
+                style="background: rgba(255,255,255,0.7); padding: 10px 25px; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: 600; color: #555; border: 2px solid transparent;">
+                Admin</div>
+            <div class="login-tab active" data-type="donor" onclick="switchTab('donor')"
+                style="background: #fff; padding: 10px 25px; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: 600; color: var(--primary-color); border-top: 5px solid var(--primary-color);">
+                Donor</div>
+            <div class="login-tab" data-type="receiver" onclick="switchTab('receiver')"
+                style="background: rgba(255,255,255,0.7); padding: 10px 25px; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: 600; color: #555; border: 2px solid transparent;">
+                Receiver</div>
+        </div>
+
+        <!-- Login Card Content -->
+        <div class="login-card-content"
+            style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px); padding: 3rem; border-radius: 15px; border-top-left-radius: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative;">
+            <div class="card-icon" style="font-size: 3rem; margin-bottom: 2rem; text-align: center;">🎁</div>
+            <h3 id="login-title" style="text-align: center; margin-bottom: 1rem; color: #333;">Donor Login</h3>
+
+            <form action="{{ url_for('login') }}" method="POST" class="login-form">
+                <input type="hidden" name="user_type" id="user_type" value="donor">
+
+                <div class="form-group">
+                    <label for="username"
+                        style="font-weight: bold; display: block; margin-bottom: 5px;">UserName/UID:</label>
+                    <input type="text" name="username" id="username" placeholder="Enter Username" required
+                        style="width: 100%; border-bottom: 2px solid #333; border-top: 0; border-left: 0; border-right: 0; border-radius: 0; padding: 10px 0; background: transparent;">
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="password"
+                        style="font-weight: bold; display: block; margin-bottom: 5px;">Password:</label>
+                    <input type="password" name="password" id="password" placeholder="Enter Password" required
+                        style="width: 100%; border-bottom: 2px solid #333; border-top: 0; border-left: 0; border-right: 0; border-radius: 0; padding: 10px 0; background: transparent;">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block"
+                    style="margin-top: 30px; border-radius: 25px;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(type) {
+            const tabs = document.querySelectorAll('.login-tab');
+            const input = document.getElementById('user_type');
+            const title = document.getElementById('login-title');
+            const icon = document.querySelector('.card-icon');
+            const contentBox = document.querySelector('.login-card-content');
+
+            // Define data for each role
+            const data = {
+                'admin': {
+                    title: 'Admin Login',
+                    icon: '👔',
+                    color: '#2196F3' // Blue
+                },
+                'donor': {
+                    title: 'Donor Login',
+                    icon: '🎁',
+                    color: '#4CAF50' // Green
+                },
+                'receiver': {
+                    title: 'Receiver Login',
+                    icon: '🏠',
+                    color: '#FF9800' // Orange
+                }
+            };
+
+            // Update UI
+            tabs.forEach(tab => {
+                if (tab.dataset.type === type) {
+                    // Active State
+                    tab.style.background = '#fff';
+                    tab.style.color = data[type].color;
+                    tab.style.borderTop = `5px solid ${data[type].color}`;
+                    tab.classList.add('active');
+                } else {
+                    // Inactive State
+                    tab.style.background = 'rgba(255,255,255,0.7)';
+                    tab.style.color = '#555';
+                    tab.style.borderTop = '2px solid transparent';
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Update Form Data
+            input.value = type;
+            title.textContent = data[type].title;
+            icon.textContent = data[type].icon;
+
+            // Update Border Color
+            contentBox.style.borderTopColor = data[type].color;
+        }
+    </script>
+
+    <div class="register-link">
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+    </div>
+</div>
+{% endblock %}

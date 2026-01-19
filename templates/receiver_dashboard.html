@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Receiver Dashboard - FoodShare{% endblock %}
+
+{% block head %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Shelter/Receiver Dashboard</h1>
+    <p>Welcome, {{ user.organization_name or user.username }}!</p>
+    <p class="user-uid"
+        style="background: #e3f2fd; display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.9rem; color: #0d47a1;">
+        <strong>UID:</strong> {{ user.unique_id }}
+    </p>
+</div>
+
+<!-- Available Donations -->
+<div class="dashboard-section">
+    <h2>Available Donations</h2>
+    {% if available_donations %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Priority</th>
+                    <th>Food Type</th>
+                    <th>Quantity</th>
+                    <th>Location</th>
+                    <th>Expiry Date</th>
+                    <th>Date Posted</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donation in available_donations %}
+                <tr>
+                    <td><span class="badge bg-warning text-dark">{{ loop.index }}</span></td>
+                    <td>{{ donation.food_type }}</td>
+                    <td>{{ donation.quantity }} {{ donation.quantity_unit }}</td>
+                    <td><a href="https://www.google.com/maps/dir/?api=1&origin={{ user.address }}&destination={{ donation.location }}"
+                            target="_blank" style="text-decoration: none; color: #2196F3; font-weight: bold;">📍 {{
+                            donation.location }}</a></td>
+                    <td style="color: #d32f2f; font-weight: bold;">
+                        {{ donation.expiry_date.strftime('%Y-%m-%d') if donation.expiry_date else 'N/A' }}
+                    </td>
+                    <td>{{ donation.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('claim_donation', donation_id=donation.id) }}"
+                            class="btn btn-sm btn-success"
+                            onclick="return confirm('Are you sure you want to claim this donation?')">Claim</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No available donations at the moment. Check back later!</p>
+    {% endif %}
+</div>
+
+<!-- My Claimed Donations -->
+<div class="dashboard-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="margin: 0;">My Claimed Donations</h2>
+        <a href="{{ url_for('receiver_dashboard') }}" class="btn btn-sm btn-primary"
+            onclick="window.location.reload(); return false;">
+            🔄 Refresh
+        </a>
+    </div>
+    {% if claimed_donations %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Food Type</th>
+                    <th>Quantity</th>
+                    <th>Location</th>
+                    <th>Claimed At</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donation in claimed_donations %}
+                <tr>
+                    <td><strong>{{ donation.food_type }}</strong></td>
+                    <td>{{ donation.quantity }} {{ donation.quantity_unit }}</td>
+                    <td><a href="https://www.google.com/maps/dir/?api=1&origin={{ user.address }}&destination={{ donation.location }}"
+                            target="_blank" style="text-decoration: none; color: #2196F3; font-weight: bold;">📍 {{
+                            donation.location }}</a></td>
+                    <td>{{ donation.claimed_at.strftime('%Y-%m-%d %H:%M:%S') if donation.claimed_at else 'N/A' }}</td>
+                    <td><span class="status-badge status-{{ donation.status }}">{{ donation.status|title }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">You haven't claimed any donations yet.</p>
+    {% endif %}
+</div>
+
+<script>
+    // Auto-refresh mechanism
+    document.addEventListener('DOMContentLoaded', function () {
+        // Update refresh button to add cache-busting
+        const refreshBtn = document.querySelector('a[onclick*="reload"]');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                // Force reload with cache busting
+                window.location.href = window.location.pathname + '?_=' + Date.now();
+            });
+        }
+    });
+</script>
+{% endblock %}

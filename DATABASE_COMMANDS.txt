@@ -1,0 +1,106 @@
+===========================================
+DATABASE EXTRACTION COMMANDS - QUICK REFERENCE
+===========================================
+
+Since SQLite3 CLI is not installed, use these Python commands instead:
+
+────────────────────────────────────────────────────────────────
+METHOD 1: Using Python Scripts (Easiest)
+────────────────────────────────────────────────────────────────
+
+1. VIEW ALL USERS:
+   python quick_export.py view_users
+
+2. VIEW ALL DONATIONS:
+   python quick_export.py view_donations
+
+3. VIEW ALL REQUESTS:
+   python quick_export.py view_requests
+
+4. EXPORT ALL DATA TO CSV:
+   python export_data.py
+
+5. SHOW STATISTICS:
+   python quick_export.py stats
+
+6. USE INTERACTIVE MENU:
+   db_commands.bat
+   (Double-click the file)
+
+────────────────────────────────────────────────────────────────
+METHOD 2: Direct Python Commands
+────────────────────────────────────────────────────────────────
+
+Open Python and run:
+
+>>> from app import app, db, User, Donation, FoodRequest
+>>> with app.app_context():
+...     # View all users
+...     users = User.query.all()
+...     for user in users:
+...         print(user.id, user.username, user.email, user.user_type)
+...
+...     # View all donations
+...     donations = Donation.query.all()
+...     for d in donations:
+...         print(d.id, d.food_type, d.quantity, d.status)
+...
+...     # View all requests
+...     requests = FoodRequest.query.all()
+...     for r in requests:
+...         print(r.id, r.food_type_needed, r.quantity_needed, r.status)
+
+────────────────────────────────────────────────────────────────
+METHOD 3: Install SQLite3 CLI (Optional)
+────────────────────────────────────────────────────────────────
+
+If you want to use SQLite3 CLI:
+
+1. Download from: https://www.sqlite.org/download.html
+2. Extract sqlite3.exe
+3. Add to PATH or place in project folder
+
+Then use:
+   sqlite3 instance/food_redistribution.db
+
+Commands:
+   .tables                    - List all tables
+   .schema user              - Show table structure
+   SELECT * FROM user;       - View all users
+   SELECT * FROM donation;   - View all donations
+   SELECT * FROM food_request; - View all requests
+   .headers on               - Show column headers
+   .mode csv                 - Set CSV mode
+   .output data.csv          - Export to file
+   .exit                     - Exit
+
+────────────────────────────────────────────────────────────────
+QUICK ONE-LINERS (PowerShell/CMD)
+────────────────────────────────────────────────────────────────
+
+View Statistics:
+   python quick_export.py stats
+
+Export All Data:
+   python export_data.py
+
+View Users:
+   python quick_export.py view_users
+
+View Donations:
+   python quick_export.py view_donations
+
+────────────────────────────────────────────────────────────────
+EXPORTED FILES
+────────────────────────────────────────────────────────────────
+
+When you run export_data.py, you'll get:
+   - exported_users.csv
+   - exported_donations.csv
+   - exported_requests.csv
+   - exported_statistics.csv
+
+These files will be saved in your project directory.
+
+===========================================
+

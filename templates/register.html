@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-header">
+        <h1>Create Account</h1>
+        <p>Join FoodShare and make an impact</p>
+    </div>
+
+    <form action="{{ url_for('register') }}" method="POST" class="register-form">
+        <div class="form-group">
+            <label>User Type</label>
+            <select name="user_type" id="user_type" required onchange="toggleOrgField()">
+                <option value="">Select user type</option>
+                <option value="donor">Donor</option>
+                <option value="receiver">Shelter/Receiver</option>
+                <option value="admin">Admin/NGO</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" name="phone">
+            </div>
+        </div>
+
+        <div class="form-group" id="org_field" style="display:none;">
+            <label>Organization Name</label>
+            <input type="text" name="organization_name">
+        </div>
+
+        <div class="form-group">
+            <label>Address</label>
+            <textarea name="address" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Register</button>
+        <div class="form-footer">
+            <p>Already have an account? <a href="{{ url_for('index') }}">Login here</a></p>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleOrgField() {
+    const userType = document.getElementById('user_type').value;
+    const orgField = document.getElementById('org_field');
+    if (userType === 'receiver' || userType === 'admin') {
+        orgField.style.display = 'block';
+    } else {
+        orgField.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
+
