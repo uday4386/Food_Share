@@ -16,6 +16,11 @@ from dotenv import load_dotenv # Added dotenv import
 
 load_dotenv() # Load environment variables from .env file
 
+# Import error handlers (append to app config later, or just import here to register them if passing app)
+# Actually, the error handler file needs 'app'. I should define them IN app.py or import them.
+# Simpler: Just define them in app.py directly.
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 
@@ -734,6 +739,13 @@ def view_donor_badges(user_id):
                          total_donations=total_donations,
                          total_quantity=total_quantity,
                          completed_donations=completed_donations)
+
+@app.errorhandler(500)
+def internal_error(error):
+    import traceback
+    config_uri = app.config.get('SQLALCHEMY_DATABASE_URI', 'NOT SET')
+    return f"<h1>Internal Server Error</h1><p>DB Config: {config_uri}</p><p>{error}</p><pre>{traceback.format_exc()}</pre>", 500
+
 
 if __name__ == '__main__':
     with app.app_context():
