@@ -334,13 +334,17 @@ def donor_dashboard():
     
     # Monthly donations (last 6 months)
     six_months_ago = datetime.utcnow() - timedelta(days=180)
+    if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+        month_column = db.func.strftime('%Y-%m', Donation.created_at).label('month')
+    else:
+        month_column = db.func.to_char(Donation.created_at, 'YYYY-MM').label('month')
     monthly_data = db.session.query(
-        db.func.strftime('%Y-%m', Donation.created_at).label('month'),
+        month_column,
         db.func.sum(Donation.quantity).label('total')
     ).filter(
         Donation.donor_id == user.id,
         Donation.created_at >= six_months_ago
-    ).group_by('month').all()
+    ).group_by(month_column).all()
     
     return render_template('donor_dashboard.html', 
                          user=user,
@@ -527,6 +531,7 @@ def admin_dashboard():
     
     # Daily statistics
     today = datetime.utcnow().date()
+    # Note: In PostgreSQL, we cast to date for comparison
     today_donations = Donation.query.filter(
         db.func.date(Donation.created_at) == today
     ).count()
@@ -649,13 +654,17 @@ def admin_dashboard():
     # Monthly statistics (last 6 months)
     try:
         six_months_ago = datetime.utcnow() - timedelta(days=180)
+        if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+            month_column = db.func.strftime('%Y-%m', Donation.created_at).label('month')
+        else:
+            month_column = db.func.to_char(Donation.created_at, 'YYYY-MM').label('month')
         monthly_stats = db.session.query(
-            db.func.strftime('%Y-%m', Donation.created_at).label('month'),
+            month_column,
             db.func.count(Donation.id).label('donations'),
             db.func.sum(Donation.quantity).label('quantity')
         ).filter(
             Donation.created_at >= six_months_ago
-        ).group_by('month').order_by('month').all()
+        ).group_by(month_column).order_by(month_column).all()
     except Exception:
         monthly_stats = []
     
@@ -731,34 +740,7 @@ if __name__ == '__main__':
         # Create all tables first
         db.create_all()
         
-        # Run migration to add unique_id column if it doesn't exist
-        # Note: SQLite doesn't strictly enforce schema changes like this easily in raw SQL without migration tools,
-        # but since we are modifying the model, we attempt to backfill.
-        # Ideally, we would use Flask-Migrate. For this simple setup,
-        # we assume the column exists (if recreate) or we hope sqlite accepts the model change if it was just created.
-        # A robust way without tools is difficult. 
-        # However, `db.create_all()` typically only creates missing tables, not missing columns.
-        # We will try a manual column addition for safety if it fails.
-        try:
-            # Check if column exists by trying to select it. Rough check.
-            db.session.execute(db.text('SELECT unique_id FROM user LIMIT 1'))
-        except Exception:
-            print("Adding unique_id column to user table...")
-            try:
-                db.session.execute(db.text('ALTER TABLE user ADD COLUMN unique_id VARCHAR(10)'))
-                db.session.commit()
-            except Exception as e:
-                print(f"Column creation warning: {e}")
-
         # Check for admin
-        if not User.query.filter_by(username='admin').first():
-             # ... (admin creation code)
-             pass 
-
-        # Now backfill IDs
-        backfill_unique_ids()
-        
-        # Create default admin user if it doesn't exist
         if not User.query.filter_by(username='admin').first():
             admin = User(
                 username='admin',
